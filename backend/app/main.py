@@ -134,11 +134,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 ALLOWED_STATUSES = {"success", "fail", "unknown"}
-CHUNK_SIZE:int = 200_000
+CHUNK_SIZE:int = 250_000
 
 def _is_iso8601(ts: str) -> bool:
     s = ts.strip()
@@ -171,7 +171,7 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
     by_status: Dict[str, int] = {k: 0 for k in ALLOWED_STATUSES}
     line_number = 1  # header is line 1
     
-    for chunk in pd.read_csv(text_stream, chunksize=10_000, keep_default_na=False):
+    for chunk in pd.read_csv(text_stream, chunksize=CHUNK_SIZE, keep_default_na=False):
         # only need to check it once
         if check_header:
             if len(chunk.columns) == 0:
@@ -221,6 +221,7 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
             by_status[status] += 1
 
     elapsed_seconds: float = time.time() - start
+    logger.debug(f''' completed data parsing in {elapsed_seconds:.2f}s ''')
     payload = {
         "total_rows": total_rows,
         "valid_rows": valid_rows,

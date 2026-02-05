@@ -1,20 +1,22 @@
 <template>
   <section>
-    <input
-      ref="fileInput"
-      type="file"
-      accept=".csv,text/csv"
-      @change="onFileChange"
-    />
+    <div>
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".csv,text/csv"
+        @change="onFileChange"
+      />
+    </div>
 
-    <p v-if="isUploading">Uploading…</p>
+    <div v-if="isUploading" style="border: 1rem;">Uploading please wait…</div>
     <p v-if="errorMsg" style="color: red">Error: {{ errorMsg }}</p>
 
     <div v-if="summary" style="margin-top: 1rem;">
       <h2>Summary</h2>
       <div>Total rows: {{ summary.total_rows }}</div>
       <div>Valid rows: {{ summary.valid_rows }}</div>
-      <div>time: {{ summary.runtime }}</div>
+      <div>Completion Time: {{ summary.runtime ?? "unkown" }}</div>
       <div>
         By status:
         <ul>
