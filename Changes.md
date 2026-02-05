@@ -1,5 +1,5 @@
 # Optimization Changes
-* Changed the csv reader to use pandas as this saved ~3-5 seconds on larger million record files.
+* Changed the csv reader to use pandas as this saved ~3-5 seconds in time on larger million record files (About 20% decrease in time).
 * Changed frontend to use Tailwind as stated in readme
 * Only slightly gave the frontend a facelift (still could be improved)
 
