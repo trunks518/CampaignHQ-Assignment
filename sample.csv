@@ -1,0 +1,8 @@
+id,status,ts,notes
+1,success,2024-01-01T00:00:00Z,first
+1,success,2024-01-01T00:00:00Z,duplicate should be ignored
+2,fail,2024-02-01T00:00:00+00:00,example
+3,unknown,2024-03-01T12:34:56,example
+4,invalid,2024-04-01T09:00:00Z,bad status
+,success,2024-01-01T00:00:00Z,missing id
+5,success,not-a-date,bad ts
