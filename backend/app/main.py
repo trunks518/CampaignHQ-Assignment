@@ -3,6 +3,7 @@
 # import csv
 # import io
 # from datetime import datetime
+# import time
 # from typing import Any, Dict, List, Set, Tuple
 
 # from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -37,6 +38,7 @@
 
 # @app.post("/api/results/upload")
 # async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
+#     start = time.time()
 #     # Prepare CSV reader with streaming text decode
 #     await file.seek(0)
 #     text_stream = io.TextIOWrapper(file.file, encoding="utf-8", newline="")
@@ -99,11 +101,13 @@
 #         valid_rows += 1
 #         by_status[status] += 1
 
+#     elapsed_seconds: float = time.time() - start
 #     payload = {
 #         "total_rows": total_rows,
 #         "valid_rows": valid_rows,
 #         "errors": errors,
 #         "by_status": by_status,
+#         "runtime": f"{elapsed_seconds:.2f}s"
 #     }
 #     return JSONResponse(content=payload)
 
@@ -134,7 +138,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(me
 logger = logging.getLogger(__name__)
 
 ALLOWED_STATUSES = {"success", "fail", "unknown"}
-CHUNK_SIZE:int = 20_000
+CHUNK_SIZE:int = 200_000
 
 def _is_iso8601(ts: str) -> bool:
     s = ts.strip()
