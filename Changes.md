@@ -18,4 +18,4 @@ Added 2 more test cases to backend for bad headers to ensure it would still fail
 
 Added a drag and drop zone to the frontend for ease of use
 
-Depending on use case this app could use AWS batch to report status and process jobs and polling could be used to fetch a job_id and the progress bar could then be extended to get the status from that job
+Depending on use case this app could use AWS batch to report status and process jobs and polling could be used to fetch a job_id and the progress bar could then be extended to get the status from that job. Then we could use a toast or some type of messaging to indicate when a job is completed.
