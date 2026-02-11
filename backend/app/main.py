@@ -120,6 +120,7 @@ import time
 from typing import Any, Dict, List, Set, Tuple
 import logging
 import pandas as pd
+import sqlite3
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
@@ -134,7 +135,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 ALLOWED_STATUSES = {"success", "fail", "unknown"}
@@ -155,6 +156,8 @@ def _is_iso8601(ts: str) -> bool:
 
 @app.post("/api/results/upload")
 async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
+    conn = sqlite3.connect('campaign.db')
+    cursor = conn.cursor()
     logger.debug(''' starting upload ''')
     start = time.time()
     
@@ -170,7 +173,10 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
     seen: Set[Tuple[str, str]] = set()
     by_status: Dict[str, int] = {k: 0 for k in ALLOWED_STATUSES}
     line_number = 1  # header is line 1
-    
+    table_name:str = f"TEMP_{file.filename.split('.')[0].strip()}"
+
+    # connect to sql for temp table
+    cursor.execute(f"CREATE TEMP TABLE {table_name} (id INT, status VARCHAR(255), ts VARCHAR(255), notes VARCHAR(255))")
     for chunk in pd.read_csv(text_stream, chunksize=CHUNK_SIZE, keep_default_na=False):
         # only need to check it once
         if check_header:
@@ -197,8 +203,12 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
             rid = row.get("id", "")
             status = (row.get("status", "") or "").lower()
             ts = row.get("ts", "")
+            notes = row.get("notes", "")
 
-
+            cursor.execute(
+                f"INSERT INTO {table_name} VALUES (?, ?, ?, ?)",
+                (rid, status, ts, notes),
+            )
             if not rid:
                 errors.append({"row": line_number, "reason": "missing id"})
                 continue
@@ -219,7 +229,7 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
     
             valid_rows += 1
             by_status[status] += 1
-
+    
     elapsed_seconds: float = time.time() - start
     logger.debug(f''' completed data parsing in {elapsed_seconds:.2f}s ''')
     payload = {
@@ -229,4 +239,7 @@ async def upload_results(file: UploadFile = File(...)) -> JSONResponse:
         "by_status": by_status,
         "runtime": f"{elapsed_seconds:.2f}s"
     }
+    
+    conn.commit()
+    conn.close()
     return JSONResponse(content=payload)

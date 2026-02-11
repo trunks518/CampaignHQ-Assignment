@@ -14,7 +14,7 @@ describe('Upload.vue', () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(summary) })
 
     const wrapper = mount(Upload)
-    const csv = 'id,status,ts,notes\n1,success,2024-01-01T00:00:00Z,a\n'
+    const csv = 'id,status,ts,notes\n1,success,2024-01-01T00:00:00Z,first\n1,success,2024-01-01T00:00:00Z,duplicate should be ignored\n2,fail,2024-02-01T00:00:00+00:00,example\n3,unknown,2024-03-01T12:34:56,example\n4,invalid,2024-04-01T09:00:00Z,bad status\n,success,2024-01-01T00:00:00Z,missing id\n5,success,not-a-date,bad ts'
     const file = new File([csv], 'data.csv', { type: 'text/csv' })
 
     // call exposed method directly
